@@ -1,0 +1,1 @@
+# wiregoblin-intellij-plugin
