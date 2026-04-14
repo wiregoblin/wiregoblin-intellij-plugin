@@ -1,7 +1,7 @@
 package io.wiregoblin.intellij
 
 object WireGoblinPlugin {
-    const val ID = "io.wiregoblin.intellij"
+    const val ID = "io.wiregoblin.plugin"
     const val DISPLAY_NAME = "WireGoblin Config"
 }
 

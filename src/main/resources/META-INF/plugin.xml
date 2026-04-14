@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>io.wiregoblin.intellij</id>
+    <id>io.wiregoblin.plugin</id>
     <name>WireGoblin Config</name>
     <vendor email="dev@wiregoblin.com" url="https://github.com/wiregoblin/wiregoblin">WireGoblin</vendor>
 

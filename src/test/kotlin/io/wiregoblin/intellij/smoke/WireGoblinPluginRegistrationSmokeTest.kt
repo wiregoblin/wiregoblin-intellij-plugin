@@ -17,7 +17,7 @@ class WireGoblinPluginRegistrationSmokeTest {
     fun `plugin descriptor exposes expected id and required dependencies`() {
         val document = parsePluginXml()
 
-        assertEquals("io.wiregoblin.intellij", document.documentElement.getElementsByTagName("id").item(0).textContent.trim())
+        assertEquals("io.wiregoblin.plugin", document.documentElement.getElementsByTagName("id").item(0).textContent.trim())
 
         val dependencies = document.documentElement
             .getElementsByTagName("depends")
