@@ -1,0 +1,48 @@
+<idea-plugin>
+    <id>io.wiregoblin.intellij</id>
+    <name>WireGoblin Config</name>
+    <vendor email="dev@wiregoblin.com" url="https://github.com/wiregoblin/wiregoblin">WireGoblin</vendor>
+
+    <description><![CDATA[
+      Adds WireGoblin configuration support in IntelliJ-based IDEs for <code>wiregoblin.yaml</code> files.
+      Includes YAML-aware completion, validation and inspections, JSON Schema support,
+      and navigation helpers.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="WireGoblin Notifications" displayType="BALLOON" isLogByDefault="true"/>
+        <completion.contributor
+                language="yaml"
+                order="first"
+                implementationClass="io.wiregoblin.intellij.WireGoblinCompletionContributor"/>
+        <codeInsight.lineMarkerProvider
+                language="yaml"
+                implementationClass="io.wiregoblin.intellij.WireGoblinWorkflowRunLineMarkerProvider"/>
+        <typedHandler implementation="io.wiregoblin.intellij.WireGoblinReferenceAutoPopupTypedHandler"/>
+        <annotator language="yaml" implementationClass="io.wiregoblin.intellij.WireGoblinBlockTypeAnnotator"/>
+        <multiHostInjector implementation="io.wiregoblin.intellij.WireGoblinSqlLanguageInjector"/>
+        <colorSettingsPage implementation="io.wiregoblin.intellij.WireGoblinColorSettingsPage"/>
+        <documentationProvider implementation="io.wiregoblin.intellij.WireGoblinDocumentationProvider"/>
+        <psi.referenceContributor
+                language="yaml"
+                implementation="io.wiregoblin.intellij.WireGoblinReferenceContributor"/>
+        <gotoDeclarationHandler implementation="io.wiregoblin.intellij.WireGoblinReferenceGotoDeclarationHandler"/>
+        <intentionAction>
+            <language>yaml</language>
+            <className>io.wiregoblin.intellij.InsertEnvPlaceholderIntention</className>
+            <category>WireGoblin</category>
+        </intentionAction>
+        <intentionAction>
+            <language>yaml</language>
+            <className>io.wiregoblin.intellij.FixDashedWireGoblinKeyIntention</className>
+            <category>WireGoblin</category>
+        </intentionAction>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <JavaScript.JsonSchema.ProviderFactory implementation="io.wiregoblin.intellij.WireGoblinJsonSchemaProviderFactory"/>
+    </extensions>
+</idea-plugin>

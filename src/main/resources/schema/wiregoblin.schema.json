@@ -1,0 +1,1110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wiregoblin.dev/schemas/wiregoblin.schema.json",
+  "$comment": "GENERATED FILE. DO NOT EDIT MANUALLY. Run generateWireGoblinSchema.",
+  "title": "WireGoblin Project",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "workflows"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "version": {
+      "type": [
+        "integer",
+        "string"
+      ]
+    },
+    "ai": {
+      "$ref": "#/$defs/ai"
+    },
+    "constants": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "secrets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "variables": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "secret_variables": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "workflows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/workflow"
+      }
+    }
+  },
+  "$defs": {
+    "ai": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "provider": {
+          "type": "string",
+          "enum": [
+            "ollama",
+            "openai_compatible"
+          ]
+        },
+        "base_url": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "timeout_seconds": {
+          "type": "integer"
+        },
+        "redact_secrets": {
+          "type": "boolean"
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variable",
+        "operator",
+        "expected"
+      ],
+      "properties": {
+        "variable": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "=",
+            "!=",
+            ">",
+            ">=",
+            "<",
+            "<=",
+            "contains",
+            "not_contains",
+            "matches",
+            "not_matches"
+          ]
+        },
+        "expected": {
+          "type": "string"
+        }
+      }
+    },
+    "block_common": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "condition": {
+          "$ref": "#/$defs/condition"
+        },
+        "continue_on_error": {
+          "type": "boolean"
+        },
+        "assign": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "blocks"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "disable_run": {
+          "type": "boolean"
+        },
+        "timeout_seconds": {
+          "type": "integer"
+        },
+        "constants": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "secrets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "secret_variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "outputs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block"
+          }
+        },
+        "catch_error_blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/block"
+          }
+        }
+      }
+    },
+    "block_http": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "method",
+            "url"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "http"
+            },
+            "method": {
+              "type": "string",
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "HEAD",
+                "OPTIONS"
+              ]
+            },
+            "url": {
+              "type": "string"
+            },
+            "headers": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_grpc": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "address",
+            "method"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "grpc"
+            },
+            "address": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            },
+            "request": {
+              "type": "string"
+            },
+            "metadata": {
+              "type": "string"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_postgres": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "dsn",
+            "query"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "postgres"
+            },
+            "dsn": {
+              "type": "string"
+            },
+            "query": {
+              "type": "string"
+            },
+            "params": {
+              "type": "string"
+            },
+            "transaction": {
+              "type": "boolean"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_redis": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "address",
+            "command"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "redis"
+            },
+            "address": {
+              "type": "string"
+            },
+            "command": {
+              "type": "string"
+            },
+            "args": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "db": {
+              "type": "integer"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_openai": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "token",
+            "model",
+            "user_prompt"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "openai"
+            },
+            "token": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "user_prompt": {
+              "type": "string"
+            },
+            "base_url": {
+              "type": "string"
+            },
+            "system_prompt": {
+              "type": "string"
+            },
+            "temperature": {
+              "type": [
+                "integer",
+                "string"
+              ]
+            },
+            "max_tokens": {
+              "type": "integer"
+            },
+            "headers": {
+              "type": "string"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_smtp": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "host",
+            "port",
+            "username",
+            "password",
+            "from",
+            "to",
+            "subject",
+            "text"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "smtp"
+            },
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "subject": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "starttls": {
+              "type": "boolean"
+            },
+            "cc": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "bcc": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "html": {
+              "type": "string"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_imap": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "host",
+            "port",
+            "username",
+            "password"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "imap"
+            },
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "integer"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "tls": {
+              "type": "boolean"
+            },
+            "mailbox": {
+              "type": "string"
+            },
+            "criteria": {
+              "type": "string"
+            },
+            "wait": {
+              "type": "boolean"
+            },
+            "select_mode": {
+              "type": "string",
+              "enum": [
+                "first",
+                "all",
+                "count"
+              ]
+            },
+            "mark_as_seen": {
+              "type": "boolean"
+            },
+            "delete": {
+              "type": "boolean"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_slack": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "webhook_url",
+            "text"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "slack"
+            },
+            "webhook_url": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "blocks": {
+              "type": "string"
+            },
+            "channel": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "icon_emoji": {
+              "type": "string"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_telegram": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "token",
+            "chat_id",
+            "message"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "telegram"
+            },
+            "token": {
+              "type": "string"
+            },
+            "chat_id": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "parse_mode": {
+              "type": "string",
+              "enum": [
+                "HTML",
+                "Markdown",
+                "MarkdownV2"
+              ]
+            },
+            "base_url": {
+              "type": "string"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_container": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "image",
+            "command"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "container"
+            },
+            "image": {
+              "type": "string"
+            },
+            "command": {
+              "type": "string"
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "workdir": {
+              "type": "string"
+            },
+            "mount_source": {
+              "type": "string"
+            },
+            "timeout_seconds": {
+              "type": "integer"
+            },
+            "docker_path": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "block_delay": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "milliseconds"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "delay"
+            },
+            "milliseconds": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "block_log": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "message"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "log"
+            },
+            "message": {
+              "type": "string"
+            },
+            "level": {
+              "type": "string",
+              "enum": [
+                "debug",
+                "info",
+                "warn",
+                "error"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "block_setvars": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "set"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "setvars"
+            },
+            "set": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "block_assert": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "variable",
+            "operator",
+            "expected"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "assert"
+            },
+            "variable": {
+              "type": "string"
+            },
+            "operator": {
+              "type": "string",
+              "enum": [
+                "=",
+                "!=",
+                ">",
+                ">=",
+                "<",
+                "<=",
+                "contains",
+                "not_contains",
+                "matches",
+                "not_matches"
+              ]
+            },
+            "expected": {
+              "type": "string"
+            },
+            "error_message": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "block_goto": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "variable",
+            "operator",
+            "expected",
+            "target_step_id"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "goto"
+            },
+            "variable": {
+              "type": "string"
+            },
+            "operator": {
+              "type": "string",
+              "enum": [
+                "=",
+                "!=",
+                ">",
+                ">=",
+                "<",
+                "<=",
+                "contains",
+                "not_contains",
+                "matches",
+                "not_matches"
+              ]
+            },
+            "expected": {
+              "type": "string"
+            },
+            "target_step_id": {
+              "type": "string"
+            },
+            "wait_seconds": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "block_transform": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "transform"
+            },
+            "value": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "casts": {
+              "type": "string"
+            },
+            "regex": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "block_retry": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "block",
+            "max_attempts",
+            "delay_ms"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "retry"
+            },
+            "block": {
+              "$ref": "#/$defs/block"
+            },
+            "max_attempts": {
+              "type": "integer"
+            },
+            "delay_ms": {
+              "type": "integer"
+            },
+            "retry_on": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      ]
+    },
+    "block_foreach": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "items",
+            "block"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "foreach"
+            },
+            "items": {
+              "type": "string"
+            },
+            "block": {
+              "$ref": "#/$defs/block"
+            },
+            "concurrency": {
+              "type": "integer"
+            },
+            "collect": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "block_parallel": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "blocks"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "parallel"
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/block"
+              }
+            },
+            "collect": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "block_workflow": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/block_common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "type",
+            "target_workflow_id"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "workflow"
+            },
+            "target_workflow_id": {
+              "type": "string"
+            },
+            "inputs": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "block": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/block_http"
+        },
+        {
+          "$ref": "#/$defs/block_grpc"
+        },
+        {
+          "$ref": "#/$defs/block_postgres"
+        },
+        {
+          "$ref": "#/$defs/block_redis"
+        },
+        {
+          "$ref": "#/$defs/block_openai"
+        },
+        {
+          "$ref": "#/$defs/block_smtp"
+        },
+        {
+          "$ref": "#/$defs/block_imap"
+        },
+        {
+          "$ref": "#/$defs/block_slack"
+        },
+        {
+          "$ref": "#/$defs/block_telegram"
+        },
+        {
+          "$ref": "#/$defs/block_container"
+        },
+        {
+          "$ref": "#/$defs/block_delay"
+        },
+        {
+          "$ref": "#/$defs/block_log"
+        },
+        {
+          "$ref": "#/$defs/block_setvars"
+        },
+        {
+          "$ref": "#/$defs/block_assert"
+        },
+        {
+          "$ref": "#/$defs/block_goto"
+        },
+        {
+          "$ref": "#/$defs/block_transform"
+        },
+        {
+          "$ref": "#/$defs/block_retry"
+        },
+        {
+          "$ref": "#/$defs/block_foreach"
+        },
+        {
+          "$ref": "#/$defs/block_parallel"
+        },
+        {
+          "$ref": "#/$defs/block_workflow"
+        }
+      ]
+    }
+  }
+}

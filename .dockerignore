@@ -1,0 +1,7 @@
+.git
+.idea
+.gradle
+.gradle-user-home
+build
+out
+
