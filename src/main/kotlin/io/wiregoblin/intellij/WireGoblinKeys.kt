@@ -25,6 +25,7 @@ internal object WireGoblinKeys {
     const val VARIABLE = "variable"
     const val OPERATOR = "operator"
     const val EXPECTED = "expected"
+    const val TARGET_WORKFLOW_ID = "target_workflow_id"
 
     const val CONSTANTS = "constants"
     const val SECRETS = "secrets"

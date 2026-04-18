@@ -33,6 +33,8 @@ class WireGoblinReferenceContributor : PsiReferenceContributor() {
                     }
 
                     val file = keyValue.containingFile as? YAMLFile ?: return PsiReference.EMPTY_ARRAY
+                    workflowTargetReference(valueElement, keyValue, file)?.let { return arrayOf(it) }
+
                     val anchor = valueElement.firstChild ?: valueElement
 
                     return WireGoblinReferenceSupport.findReferenceTokens(valueElement.text)
@@ -51,13 +53,62 @@ class WireGoblinReferenceContributor : PsiReferenceContributor() {
                                     )
                                     WireGoblinYamlReference(valueElement, rangeInElement, token.kind, token.raw, file, anchor)
                                 }
-                                else -> null
                             }
                         }
                         .toTypedArray()
                 }
             },
         )
+    }
+}
+
+private fun workflowTargetReference(
+    valueElement: YAMLValue,
+    keyValue: YAMLKeyValue,
+    file: YAMLFile,
+): PsiReference? {
+    if (keyValue.keyText != WireGoblinKeys.TARGET_WORKFLOW_ID) {
+        return null
+    }
+
+    val blockMapping = keyValue.parent as? org.jetbrains.yaml.psi.YAMLMapping ?: return null
+    if (WireGoblinYamlContextLocator.currentBlockType(blockMapping) != "workflow") {
+        return null
+    }
+
+    return WireGoblinWorkflowTargetReference(valueElement, scalarValueRange(valueElement), file, keyValue.valueText)
+}
+
+private fun scalarValueRange(valueElement: YAMLValue): TextRange {
+    val text = valueElement.text
+    return if (text.length >= 2 && text.first() == text.last() && (text.first() == '"' || text.first() == '\'')) {
+        TextRange(1, text.length - 1)
+    } else {
+        TextRange(0, text.length)
+    }
+}
+
+private class WireGoblinWorkflowTargetReference(
+    element: YAMLValue,
+    rangeInElement: TextRange,
+    private val file: YAMLFile,
+    private val targetWorkflowId: String,
+) : PsiReferenceBase<YAMLValue>(element, rangeInElement, false) {
+    override fun resolve(): PsiElement? {
+        if (targetWorkflowId.isBlank()) {
+            return null
+        }
+
+        return WireGoblinYamlReferenceScopeHelper.workflowIdEntries(file)
+            .firstOrNull { it.valueText == targetWorkflowId }
+            ?.value
+    }
+
+    override fun getCanonicalText(): String = targetWorkflowId
+
+    override fun isReferenceTo(element: PsiElement): Boolean {
+        val target = resolve()
+        return target == element || target?.parent == element
     }
 }
 

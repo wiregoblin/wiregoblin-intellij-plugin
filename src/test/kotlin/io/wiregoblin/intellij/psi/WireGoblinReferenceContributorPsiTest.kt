@@ -1,9 +1,15 @@
 package io.wiregoblin.intellij.psi
 
+import com.intellij.psi.search.searches.ReferencesSearch
+import com.intellij.psi.util.PsiTreeUtil
 import io.wiregoblin.intellij.WireGoblinBuiltInReferenceTarget
+import io.wiregoblin.intellij.WireGoblinKeys
+import io.wiregoblin.intellij.WireGoblinReferenceGotoDeclarationHandler
 import org.jetbrains.yaml.psi.YAMLKeyValue
+import org.jetbrains.yaml.psi.YAMLValue
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class WireGoblinReferenceContributorPsiTest : WireGoblinPsiTestCase() {
     fun testResolvesAtReferenceToTopLevelConstant() {
@@ -302,5 +308,90 @@ class WireGoblinReferenceContributorPsiTest : WireGoblinPsiTestCase() {
 
         val reference = file.findReferenceAt(myFixture.caretOffset)
         assertNull(reference)
+    }
+
+    fun testResolvesWorkflowBlockTargetWorkflowId() {
+        val file = configureWireGoblin(
+            """
+                workflows:
+                  - id: workflow_block_example
+                    blocks:
+                      - id: "nested_workflow"
+                        type: "workflow"
+                        target_workflow_id: "parent_builtins_child_<caret>example"
+                  - id: parent_builtins_child_example
+                    blocks:
+                      - id: "log_child"
+                        type: "log"
+                        message: "child"
+            """.trimIndent(),
+        )
+
+        val reference = file.findReferenceAt(myFixture.caretOffset)
+        val target = requireNotNull(reference?.resolve()) as YAMLValue
+        val targetKeyValue = target.parent as YAMLKeyValue
+
+        assertEquals(WireGoblinKeys.ID, targetKeyValue.keyText)
+        assertEquals("parent_builtins_child_example", targetKeyValue.valueText)
+    }
+
+    fun testFindsWorkflowBlockTargetWorkflowIdUsage() {
+        val file = configureWireGoblin(
+            """
+                workflows:
+                  - id: workflow_block_example
+                    blocks:
+                      - id: "nested_workflow"
+                        type: "workflow"
+                        target_workflow_id: "parent_builtins_child_example"
+                  - id: parent_builtins_child_example
+                    blocks:
+                      - id: "log_child"
+                        type: "log"
+                        message: "child"
+            """.trimIndent(),
+        )
+
+        val targetWorkflowId = PsiTreeUtil.findChildrenOfType(file, YAMLKeyValue::class.java)
+            .first { it.keyText == WireGoblinKeys.ID && it.valueText == "parent_builtins_child_example" }
+            .value as YAMLValue
+        val references = ReferencesSearch.search(targetWorkflowId).findAll()
+
+        assertTrue(
+            references.any { reference ->
+                reference.resolve() == targetWorkflowId &&
+                    (reference.element.parent as? YAMLKeyValue)?.keyText == WireGoblinKeys.TARGET_WORKFLOW_ID
+            },
+        )
+    }
+
+    fun testGotoFromWorkflowIdReturnsWorkflowBlockUsages() {
+        val file = configureWireGoblin(
+            """
+                workflows:
+                  - id: workflow_block_example
+                    blocks:
+                      - id: "nested_workflow"
+                        type: "workflow"
+                        target_workflow_id: "parent_builtins_child_example"
+                  - id: parent_builtins_child_<caret>example
+                    blocks:
+                      - id: "log_child"
+                        type: "log"
+                        message: "child"
+            """.trimIndent(),
+        )
+
+        val sourceElement = requireNotNull(file.findElementAt(myFixture.caretOffset))
+        val targets = WireGoblinReferenceGotoDeclarationHandler()
+            .getGotoDeclarationTargets(sourceElement, myFixture.caretOffset, myFixture.editor)
+            .orEmpty()
+
+        assertTrue(
+            targets.any { target ->
+                (target.parent as? YAMLKeyValue)?.keyText == WireGoblinKeys.TARGET_WORKFLOW_ID &&
+                    (target as? YAMLValue)?.text?.contains("parent_builtins_child_example") == true
+            },
+        )
     }
 }

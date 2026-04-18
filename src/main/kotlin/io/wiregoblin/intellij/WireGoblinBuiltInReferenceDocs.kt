@@ -32,9 +32,16 @@ internal object WireGoblinBuiltInReferenceDocs {
         WireGoblinBuiltInReferenceDoc("!Each.Last", null, "true when the current foreach item is the last item."),
         WireGoblinBuiltInReferenceDoc("!Each.Item", null, "Current foreach item value."),
         WireGoblinBuiltInReferenceDoc("!Each.ItemJSON", null, "Current foreach item serialized as JSON."),
+        WireGoblinBuiltInReferenceDoc("!Each.Item.<field>", null, "Field of the current foreach item when iterating over objects."),
         WireGoblinBuiltInReferenceDoc("!Retry.Attempt", null, "Current retry attempt number inside a retry block."),
         WireGoblinBuiltInReferenceDoc("!Retry.MaxAttempts", null, "Maximum configured number of retry attempts inside a retry block."),
     ).associateBy { it.name }
 
-    fun find(name: String): WireGoblinBuiltInReferenceDoc? = docs[name]
+    fun find(name: String): WireGoblinBuiltInReferenceDoc? {
+        return docs[name] ?: if (WireGoblinReferenceCatalog.isEachItemFieldReference(name)) {
+            docs["!Each.Item.<field>"]
+        } else {
+            null
+        }
+    }
 }

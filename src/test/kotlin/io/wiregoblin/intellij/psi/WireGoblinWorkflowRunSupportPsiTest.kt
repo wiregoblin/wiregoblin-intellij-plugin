@@ -106,5 +106,30 @@ class WireGoblinWorkflowRunSupportPsiTest : WireGoblinPsiTestCase() {
 
         assertNotNull(marker)
         assertEquals("Run WireGoblin workflow 'wf_main'", marker!!.lineMarkerTooltip)
+        assertNotNull(marker.navigationHandler)
+    }
+
+    fun testWorkflowRunMarkerPopupContainsVerbosityActions() {
+        val file = configureWireGoblin(
+            """
+                workflows:
+                  - id: "wf_main"
+                    blocks: []
+            """.trimIndent(),
+        )
+
+        val idKeyValue = PsiTreeUtil.findChildrenOfType(file, YAMLKeyValue::class.java)
+            .firstOrNull { it.keyText == WireGoblinKeys.ID }
+        val marker = idKeyValue
+            ?.key
+            ?.let(lineMarkerProvider::getLineMarkerInfo)
+
+        val popupActions = marker
+            ?.createGutterRenderer()
+            ?.popupMenuActions
+            ?.getChildren(null)
+            ?.map { it.templatePresentation.text }
+
+        assertEquals(listOf("Run", "Run -v", "Run -vv", "Run -vvv"), popupActions)
     }
 }

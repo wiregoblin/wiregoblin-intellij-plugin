@@ -65,6 +65,8 @@ Reference suggestions are scope-aware:
 - top-level constants, secrets, variables, and secret variables are suggested
 - workflow-local constants, secrets, variables, and secret variables are also suggested when editing inside a workflow
 
+Workflow block `target_workflow_id` values resolve to workflow `id` declarations. Users can navigate from a workflow block to the target workflow, use Find Usages on a workflow id, and command-click a workflow id to jump to workflow-block usages when any exist.
+
 ### Auto-popup behavior for references
 
 The plugin includes a typed handler that can automatically trigger completion when the user starts entering WireGoblin reference prefixes. This makes `@`, `$`, and `!` based references faster to insert in value positions.
@@ -120,14 +122,30 @@ For runnable workflows, the plugin shows a green run arrow in the gutter next to
 
 Clicking the icon saves the current documents and launches the configured workflow through the WireGoblin CLI in IntelliJ's run tool window.
 
+While a workflow launched from the gutter is still running, the gutter icon changes to a stop icon. Clicking it again stops the active process instead of opening another run tab.
+
+Right-clicking the gutter icon opens run variants:
+
+- `Run`
+- `Run -v`
+- `Run -vv`
+- `Run -vvv`
+
+When the workflow is already running, the right-click menu shows `Stop`.
+
 The plugin currently resolves the CLI from `PATH` and supports these executable names:
 
 - `wiregoblin-cli`
 - `wiregoblin`
 
-The executed command shape is:
+The default executed command shape is:
 
 - `wiregoblin-cli run -p <current file> <workflow_id>`
+- `wiregoblin run -p <current file> <workflow_id>`
+
+Verbose variants insert the selected flag before the project file argument:
+
+- `wiregoblin-cli run -vv -p <current file> <workflow_id>`
 
 If a workflow has `disable_run: true`, the run gutter action is not shown because the WireGoblin runtime does not allow direct execution of that workflow.
 

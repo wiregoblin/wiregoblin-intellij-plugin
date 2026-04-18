@@ -67,9 +67,10 @@ internal object WireGoblinTypeResolver {
             return field.toValueConstraint("WireGoblin AI setting")
         }
 
-        val blockSpec = WireGoblinYamlContextLocator.currentBlockSpec(mapping) ?: return null
-        val field = blockSpec.field(keyValue.keyText) ?: return null
-        return field.toValueConstraint("WireGoblin ${field.name} value")
+        val blockSpec = WireGoblinYamlContextLocator.currentBlockSpec(mapping)
+        val field = blockSpec?.field(keyValue.keyText)
+        return field?.toValueConstraint("WireGoblin ${field.name} value")
+            ?: commonValueConstraint(keyValue.keyText, mapping)
     }
 
     private fun WireGoblinFieldSpec.toValueConstraint(description: String): ValueConstraint? {
@@ -77,5 +78,16 @@ internal object WireGoblinTypeResolver {
             return null
         }
         return ValueConstraint(description, allowedValues)
+    }
+
+    private fun commonValueConstraint(key: String, mapping: YAMLMapping): ValueConstraint? {
+        val sequenceOwner = WireGoblinYamlContextLocator.sequenceOwnerKey(mapping)
+        return when {
+            key == WireGoblinKeys.OPERATOR &&
+                (sequenceOwner == WireGoblinKeys.BLOCKS || sequenceOwner == WireGoblinKeys.CATCH_ERROR_BLOCKS) ->
+                WireGoblinSchema.conditionFieldsByName[key]?.toValueConstraint("WireGoblin operator value")
+
+            else -> null
+        }
     }
 }

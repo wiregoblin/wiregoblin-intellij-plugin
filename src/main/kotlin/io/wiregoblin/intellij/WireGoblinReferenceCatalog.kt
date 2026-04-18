@@ -19,6 +19,7 @@ enum class WireGoblinReferenceKind(
 
 internal object WireGoblinReferenceCatalog {
     val kinds = WireGoblinReferenceKind.entries
+    private const val EACH_ITEM_FIELD_PREFIX = "!Each.Item."
 
     val bangReferences = listOf(
         "!RunID",
@@ -48,6 +49,15 @@ internal object WireGoblinReferenceCatalog {
         "!Retry.Attempt",
         "!Retry.MaxAttempts",
     )
+
+    fun isBangReference(raw: String): Boolean {
+        return raw in bangReferences || isEachItemFieldReference(raw)
+    }
+
+    fun isEachItemFieldReference(raw: String): Boolean {
+        return raw.startsWith(EACH_ITEM_FIELD_PREFIX) &&
+            raw.removePrefix(EACH_ITEM_FIELD_PREFIX).split('.').all { it.isNotBlank() }
+    }
 
     val helperTemplates = listOf(
         ValueHelperTemplate("\${NAME}", "Environment variable", 2, 6),

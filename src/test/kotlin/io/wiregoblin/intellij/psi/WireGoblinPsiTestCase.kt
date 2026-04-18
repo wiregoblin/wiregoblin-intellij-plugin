@@ -14,11 +14,13 @@ import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiReferenceContributor
+import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.testFramework.ExtensionTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.wiregoblin.intellij.WireGoblinBlockTypeAnnotator
 import io.wiregoblin.intellij.WireGoblinCompletionContributor
 import io.wiregoblin.intellij.WireGoblinReferenceContributor
+import io.wiregoblin.intellij.WireGoblinWorkflowTargetUsageSearcher
 import io.wiregoblin.intellij.WireGoblinWorkflowRunLineMarkerProvider
 import org.jetbrains.yaml.YAMLFileType
 import org.jetbrains.yaml.YAMLLanguage
@@ -62,6 +64,7 @@ abstract class WireGoblinPsiTestCase : BasePlatformTestCase() {
             ),
             testRootDisposable,
         )
+        ReferencesSearch.EP_NAME.point.registerExtension(WireGoblinWorkflowTargetUsageSearcher(), testRootDisposable)
         ExtensionTestUtil.addExtensions(
             LineMarkerProviders.EP_NAME,
             listOf(

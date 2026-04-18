@@ -16,6 +16,8 @@ The plugin currently targets these file names:
 - Block type completion and required-field templates
 - Block-type validation and retry-rule-type validation
 - Reference helpers for `@`, `$`, `!`, and `${VAR:=default}`
+- Gutter workflow execution with run, stop, and verbose run variants
+- Intentions for inserting environment placeholders and fixing malformed dashed keys
 - JSON schema bundled with the plugin
 
 ## Project structure
@@ -86,5 +88,4 @@ In GoLand:
 ## Notes
 
 - The plugin follows the current WireGoblin docs and skill references, including `catch_error_blocks` and `openai_compatible`.
-- The automated test suite currently covers plugin contract drift, file matching, schema drift, and reference-token parsing.
-- Full IntelliJ fixture-based completion integration tests were explored but are not yet stable enough to keep in the default test suite.
+- The automated test suite covers plugin contract drift, file matching, schema drift, reference-token parsing, and PSI fixture behavior for completion, references, annotations, and gutter run support.

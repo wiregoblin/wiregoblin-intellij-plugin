@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.bundling.Zip
 
 plugins {
     kotlin("jvm") version "2.3.20"
@@ -70,6 +71,12 @@ tasks {
 
     processResources {
         dependsOn("checkGeneratedWireGoblinSchema")
+    }
+
+    named<Zip>("buildPlugin") {
+        from("src/main/resources/META-INF/pluginIcon.svg") {
+            into("META-INF")
+        }
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

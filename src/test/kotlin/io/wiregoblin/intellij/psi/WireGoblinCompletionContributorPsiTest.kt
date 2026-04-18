@@ -279,6 +279,94 @@ class WireGoblinCompletionContributorPsiTest : WireGoblinPsiTestCase() {
         assertContainsAll(myFixture.lookupElementStrings.orEmpty(), "=", "!=", "contains", "matches")
     }
 
+    fun testSuggestsOperatorValuesInsideUnquotedAssertBlock() {
+        configureWireGoblin(
+            """
+                workflows:
+                  - id: "wf"
+                    blocks:
+                      - id: "assert_status"
+                        type: "assert"
+                        variable: "${'$'}status"
+                        operator: <caret>
+            """.trimIndent(),
+        )
+
+        myFixture.completeBasic()
+
+        assertContainsAll(myFixture.lookupElementStrings.orEmpty(), "=", "!=", "contains", "matches")
+    }
+
+    fun testSuggestsOperatorValuesInsideBlockCondition() {
+        configureWireGoblin(
+            """
+                workflows:
+                  - id: "wf"
+                    blocks:
+                      - id: "step"
+                        type: "http"
+                        condition:
+                          variable: "${'$'}status"
+                          operator: <caret>
+                        method: "GET"
+                        url: "https://example.test"
+            """.trimIndent(),
+        )
+
+        myFixture.completeBasic()
+
+        assertContainsAll(myFixture.lookupElementStrings.orEmpty(), "=", "!=", "contains", "matches")
+    }
+
+    fun testSuggestsOperatorValuesBeforeBlockTypeIsKnown() {
+        configureWireGoblin(
+            """
+                workflows:
+                  - id: "wf"
+                    blocks:
+                      - id: "assert_status"
+                        variable: "${'$'}status"
+                        operator: <caret>
+            """.trimIndent(),
+        )
+
+        myFixture.completeBasic()
+
+        assertContainsAll(myFixture.lookupElementStrings.orEmpty(), "=", "!=", "contains", "matches")
+    }
+
+    fun testFiltersOperatorValuesByPartialPrefix() {
+        configureWireGoblin(
+            """
+                workflows:
+                  - id: "wf"
+                    blocks:
+                      - id: "assert_status"
+                        type: "assert"
+                        variable: "${'$'}status"
+                        operator: !<caret>
+            """.trimIndent(),
+        )
+
+        myFixture.completeBasic()
+
+        val items = myFixture.lookupElementStrings.orEmpty()
+        assertContainsAll(items, "!=")
+        assertFalse("=" in items, "Did not expect '=' for ! prefix in $items")
+    }
+
+    fun testDoesNotSuggestOperatorValuesOutsideBlockContext() {
+        configureWireGoblin(
+            """
+                operator: <caret>
+            """.trimIndent(),
+        )
+
+        myFixture.completeBasic()
+
+        assertFalse("=" in myFixture.lookupElementStrings.orEmpty())
+    }
+
     fun testDoesNotOfferWireGoblinCompletionForNonWireGoblinFile() {
         configurePlainYaml(
             """

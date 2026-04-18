@@ -23,6 +23,9 @@ internal object WireGoblinReferenceResolver {
     }
 
     fun exists(kind: WireGoblinReferenceKind, raw: String, file: YAMLFile?, position: PsiElement): Boolean {
+        if (kind == WireGoblinReferenceKind.EXPRESSION) {
+            return WireGoblinReferenceCatalog.isBangReference(raw)
+        }
         return suggestions(kind, file, position).contains(raw)
     }
 

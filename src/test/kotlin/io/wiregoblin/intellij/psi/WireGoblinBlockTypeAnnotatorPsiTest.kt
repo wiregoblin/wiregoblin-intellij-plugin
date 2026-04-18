@@ -315,6 +315,33 @@ class WireGoblinBlockTypeAnnotatorPsiTest : WireGoblinPsiTestCase() {
         assertFalse(descriptions.any { it == "Unknown WireGoblin reference '${'$'}range_values'." })
     }
 
+    fun testDoesNotHighlightForeachItemFieldBuiltIns() {
+        configureWireGoblin(
+            """
+                variables:
+                  users_batch: '[{"id":"101","name":"Alice Goblin"}]'
+                workflows:
+                  - id: "foreach_example"
+                    blocks:
+                      - id: "notify_each_user"
+                        type: "foreach"
+                        items: "${'$'}users_batch"
+                        concurrency: 2
+                        block:
+                          type: "log"
+                          level: "info"
+                          message: "Foreach item !Each.Index/!Each.Count -> !Each.Item.name (!Each.Item.id)"
+                        collect:
+                          ${'$'}foreach_user_ids: "item.id"
+                          ${'$'}foreach_user_names: "item.name"
+            """.trimIndent(),
+        )
+
+        val descriptions = myFixture.doHighlighting().mapNotNull { it.description }
+        assertFalse(descriptions.any { it == "Unknown WireGoblin reference '!Each.Item.name'." })
+        assertFalse(descriptions.any { it == "Unknown WireGoblin reference '!Each.Item.id'." })
+    }
+
     fun testDoesNotHighlightAssignVariableFromPostgresTransactionUsedInLaterAssertBlock() {
         configureWireGoblin(
             """

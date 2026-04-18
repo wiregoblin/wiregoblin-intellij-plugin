@@ -20,6 +20,8 @@ class WireGoblinReferenceGotoDeclarationHandler : GotoDeclarationHandler {
         }
 
         val keyValue = PsiTreeUtil.getParentOfType(sourceElement, YAMLKeyValue::class.java, false) ?: return null
+        workflowIdUsageTargets(keyValue, file, offset)?.let { return it }
+
         if (!WireGoblinYamlContextLocator.supportsEnvPlaceholder(keyValue)) {
             return null
         }
@@ -45,4 +47,18 @@ class WireGoblinReferenceGotoDeclarationHandler : GotoDeclarationHandler {
     }
 
     override fun getActionText(context: com.intellij.openapi.actionSystem.DataContext): String? = null
+
+    private fun workflowIdUsageTargets(keyValue: YAMLKeyValue, file: YAMLFile, offset: Int): Array<PsiElement>? {
+        val valueElement = keyValue.value ?: return null
+        if (offset !in valueElement.textRange.startOffset..valueElement.textRange.endOffset) {
+            return null
+        }
+
+        val workflowIdKeyValue = WireGoblinWorkflowTargetReferences.workflowIdKeyValue(valueElement) ?: return null
+        val usages = WireGoblinWorkflowTargetReferences.referencesTo(file, workflowIdKeyValue)
+            .map { it.element }
+            .toTypedArray()
+
+        return usages.takeIf { it.isNotEmpty() }
+    }
 }

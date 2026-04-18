@@ -1,10 +1,11 @@
 <idea-plugin>
     <id>io.wiregoblin.plugin</id>
     <name>WireGoblin Config</name>
-    <vendor email="dev@wiregoblin.com" url="https://github.com/wiregoblin/wiregoblin">WireGoblin</vendor>
+    <vendor email="fable.wisest.2r@icloud.com" url="https://github.com/wiregoblin/wiregoblin">WireGoblin</vendor>
 
     <description><![CDATA[
-      Adds WireGoblin configuration support in IntelliJ-based IDEs for <code>wiregoblin.yaml</code> files.
+      Adds <a href="https://github.com/wiregoblin/wiregoblin">WireGoblin</a> configuration support
+      in IntelliJ-based IDEs for <code>wiregoblin.yaml</code> files.
       Includes YAML-aware completion, validation and inspections, JSON Schema support,
       and navigation helpers.
     ]]></description>
@@ -22,6 +23,7 @@
                 language="yaml"
                 implementationClass="io.wiregoblin.intellij.WireGoblinWorkflowRunLineMarkerProvider"/>
         <typedHandler implementation="io.wiregoblin.intellij.WireGoblinReferenceAutoPopupTypedHandler"/>
+        <fileIconProvider implementation="io.wiregoblin.intellij.WireGoblinFileIconProvider"/>
         <annotator language="yaml" implementationClass="io.wiregoblin.intellij.WireGoblinBlockTypeAnnotator"/>
         <multiHostInjector implementation="io.wiregoblin.intellij.WireGoblinSqlLanguageInjector"/>
         <colorSettingsPage implementation="io.wiregoblin.intellij.WireGoblinColorSettingsPage"/>
@@ -29,6 +31,7 @@
         <psi.referenceContributor
                 language="yaml"
                 implementation="io.wiregoblin.intellij.WireGoblinReferenceContributor"/>
+        <referencesSearch implementation="io.wiregoblin.intellij.WireGoblinWorkflowTargetUsageSearcher"/>
         <gotoDeclarationHandler implementation="io.wiregoblin.intellij.WireGoblinReferenceGotoDeclarationHandler"/>
         <intentionAction>
             <language>yaml</language>
@@ -45,4 +48,13 @@
     <extensions defaultExtensionNs="com.intellij">
         <JavaScript.JsonSchema.ProviderFactory implementation="io.wiregoblin.intellij.WireGoblinJsonSchemaProviderFactory"/>
     </extensions>
+
+    <actions>
+        <group id="WireGoblin.FileRunActions"
+               class="io.wiregoblin.intellij.WireGoblinFileRunActionGroup"
+               text="WireGoblin"
+               popup="true">
+            <add-to-group group-id="ProjectViewPopupMenuRunGroup" anchor="first"/>
+        </group>
+    </actions>
 </idea-plugin>

@@ -3,6 +3,7 @@ package io.wiregoblin.intellij
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.yaml.psi.YAMLKeyValue
+import org.jetbrains.yaml.psi.YAMLFile
 import org.jetbrains.yaml.psi.YAMLMapping
 import org.jetbrains.yaml.psi.YAMLSequence
 import org.jetbrains.yaml.psi.YAMLSequenceItem
@@ -31,6 +32,18 @@ internal object WireGoblinYamlReferenceScopeHelper {
     fun sectionEntries(mapping: YAMLMapping?, sectionName: String): List<YAMLKeyValue> {
         val section = mapping?.getKeyValueByKey(sectionName)?.value as? YAMLMapping ?: return emptyList()
         return section.keyValues.toList()
+    }
+
+    fun workflowIdEntries(file: YAMLFile?): List<YAMLKeyValue> {
+        val workflows = WireGoblinYamlContextLocator.topLevelMapping(file)
+            ?.getKeyValueByKey(WireGoblinKeys.WORKFLOWS)
+            ?.value as? YAMLSequence
+            ?: return emptyList()
+
+        return workflows.items.mapNotNull { item ->
+            PsiTreeUtil.findChildOfType(item, YAMLMapping::class.java)
+                ?.getKeyValueByKey(WireGoblinKeys.ID)
+        }
     }
 
     fun assignVariables(workflowMapping: YAMLMapping?, position: PsiElement? = null): List<String> {
