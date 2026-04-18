@@ -22,6 +22,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import javax.swing.Icon
@@ -51,7 +52,7 @@ internal object WireGoblinWorkflowRunner {
     ) {
         val key = WorkflowRunKey(project.locationHash, file.path, workflowId)
         if (stop(key)) {
-            restartLineMarkers(project)
+            restartLineMarkers(project, file)
             return
         }
 
@@ -72,10 +73,10 @@ internal object WireGoblinWorkflowRunner {
         val runningWorkflow = RunningWorkflow()
         if (runningWorkflows.putIfAbsent(key, runningWorkflow) != null) {
             stop(key)
-            restartLineMarkers(project)
+            restartLineMarkers(project, file)
             return
         }
-        restartLineMarkers(project)
+        restartLineMarkers(project, file)
 
         val commandLineArguments = buildList {
             add("run")
@@ -90,13 +91,13 @@ internal object WireGoblinWorkflowRunner {
         file.parent?.let { commandLine.withWorkDirectory(it.path) }
 
         try {
-            val profile = WireGoblinRunProfile(project, runName, commandLine, key, runningWorkflow)
+            val profile = WireGoblinRunProfile(project, runName, file, commandLine, key, runningWorkflow)
             ExecutionEnvironmentBuilder
                 .create(project, DefaultRunExecutor.getRunExecutorInstance(), profile)
                 .buildAndExecute()
         } catch (error: ExecutionException) {
             runningWorkflows.remove(key, runningWorkflow)
-            restartLineMarkers(project)
+            restartLineMarkers(project, file)
             notify(
                 project = project,
                 content = "Failed to start WireGoblin run '$runName': ${error.message ?: "unknown error"}",
@@ -130,11 +131,12 @@ internal object WireGoblinWorkflowRunner {
         return true
     }
 
-    @Suppress("DEPRECATION")
-    private fun restartLineMarkers(project: Project) {
+    private fun restartLineMarkers(project: Project, file: VirtualFile) {
         ApplicationManager.getApplication().invokeLater {
-            if (!project.isDisposed) {
-                DaemonCodeAnalyzer.getInstance(project).restart()
+            if (!project.isDisposed && file.isValid) {
+                PsiManager.getInstance(project).findFile(file)?.let { psiFile ->
+                    DaemonCodeAnalyzer.getInstance(project).restart(psiFile, "WireGoblin workflow run state changed")
+                }
             }
         }
     }
@@ -149,6 +151,7 @@ internal object WireGoblinWorkflowRunner {
     private class WireGoblinRunProfile(
         private val project: Project,
         private val runName: String,
+        private val file: VirtualFile,
         private val commandLine: GeneralCommandLine,
         private val key: WorkflowRunKey,
         private val runningWorkflow: RunningWorkflow,
@@ -168,14 +171,14 @@ internal object WireGoblinWorkflowRunner {
                         KillableColoredProcessHandler(commandLine)
                     } catch (error: ExecutionException) {
                         runningWorkflows.remove(key, runningWorkflow)
-                        restartLineMarkers(project)
+                        restartLineMarkers(project, file)
                         throw error
                     }
                     runningWorkflow.processHandler = processHandler
                     processHandler.addProcessListener(object : ProcessListener {
                         override fun processTerminated(event: ProcessEvent) {
                             runningWorkflows.remove(key, runningWorkflow)
-                            restartLineMarkers(project)
+                            restartLineMarkers(project, file)
                         }
                     })
                     if (runningWorkflow.stopRequested) {
